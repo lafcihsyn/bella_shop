@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ════════════════════════════════════════════════════════════
+    // PUBLIC READ (Webshop-Frontend - nur Webshop-aktive Daten)
+    // ════════════════════════════════════════════════════════════
+
+    // Modelle: nur mit webshopActive == true öffentlich lesbar
+    match /models/{modelId} {
+      allow read: if resource.data.webshopActive == true;
+      // Schreiben: nur durch eingeloggte Mitarbeiter (App)
+      allow write: if request.auth != null;
+    }
+
+    // Varianten: für alle Modelle die öffentlich sind, öffentlich lesbar
+    // (Varianten sind nicht modell-spezifisch, sondern global referenziert)
+    match /variants/{variantId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Farben: alle veröffentlichten Farben sind öffentlich lesbar
+    match /colors/{colorId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Filialen: nur Name und Adresse öffentlich (für Abhol-Anzeige)
+    match /filialen/{filialeId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Einstellungen: nur Webshop-relevante Felder via Functions abgefragt
+    match /settings/{settingsDoc} {
+      // Orderconter, InvoiceCounter etc. - nur via Cloud Functions
+      allow read: if request.auth != null;
+      allow write: if false; // nur Functions dürfen schreiben (Admin SDK umgeht Rules)
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // ORDERS (Bestellungen - Webshop schreibt via Cloud Function)
+    // ════════════════════════════════════════════════════════════
+
+    match /orders/{orderId} {
+      // Lesen: Mitarbeiter (App) - oder Tracking-Token-basiert via Function
+      allow read: if request.auth != null;
+      // Schreiben: nur Mitarbeiter (App). Webshop nutzt Cloud Function (Admin SDK).
+      allow write: if request.auth != null;
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // INVOICES (Rechnungen - nur via Cloud Function)
+    // ════════════════════════════════════════════════════════════
+
+    match /invoices/{invoiceId} {
+      allow read: if request.auth != null;
+      allow write: if false; // nur via Cloud Function
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // ALLES ANDERE (Bestand, Logs, Stammdaten der App) - nur Auth
+    // ════════════════════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

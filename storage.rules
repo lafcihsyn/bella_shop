@@ -1,0 +1,37 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // PDF-Rechnungen: nur für eingeloggte Mitarbeiter direkt lesbar (BestellApp).
+    // Kunden bekommen die Rechnung per Email-Anhang oder via /api/orders/track/:token/invoice
+    // (Cloud Function streamt das PDF mit dem Tracking-Token als Authorisierung).
+    match /invoices/{invoiceFile} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Modell-Bilder: öffentlich lesbar (für den Webshop), schreiben nur durch Mitarbeiter.
+    // Pfad: models/{modelId}/{filename}. Maximale Dateigröße 5 MB, nur Bilder.
+    match /models/{modelId}/{imageFile} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null;
+    }
+
+    // Hero-Banner-Bilder für die Webshop-Startseite. Öffentlich lesbar.
+    // Pfad: hero/{filename}. Maximale Dateigröße 5 MB, nur Bilder.
+    match /hero/{imageFile} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null;
+    }
+
+    // Alles andere: nur via Functions
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

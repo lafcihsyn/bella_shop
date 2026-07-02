@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Firebase Cache / Logs
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*-debug.log
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Env / Secrets — NIEMALS committen
+.env
+.env.local
+.env.*.local
+*serviceAccount*.json
+*service-account*.json
+.runtimeconfig.json
+
+# Claude Code lokale Einstellungen (die Plaene in .claude/plans/ bleiben aber drin)
+.claude/settings.local.json

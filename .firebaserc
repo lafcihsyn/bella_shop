@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "fliegengitter-3486c"
+  },
+  "targets": {
+    "fliegengitter-3486c": {
+      "hosting": {
+        "app": [
+          "fliegengitter-3486c"
+        ],
+        "shop": [
+          "bestellung-fliegengitterwien"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

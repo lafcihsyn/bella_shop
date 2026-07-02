@@ -45,6 +45,29 @@
 
 ---
 
+## 🔗 Adressen-Spickzettel (Live + Test-Channel)
+
+**BestellApp (fliegengitter-web) — intern für Mitarbeiter:**
+- 🟢 **Live:** https://fliegengitter-3486c.web.app
+- 🧪 **Test:** https://fliegengitter-3486c--test-zeevrfnf.web.app *(aktueller Channel; die genaue Adresse zeigt der Deploy-Befehl an — Hash kann sich ändern, wenn der Channel neu erstellt wird)*
+
+**Webshop (bella_shop) — öffentlicher Shop:**
+- 🟢 **Live:** https://fliegengitterwien.at (= https://www.fliegengitterwien.at) · Firebase-Adresse: https://bestellung-fliegengitterwien.web.app
+- 🧪 **Test:** https://bestellung-fliegengitterwien--test-sy9w75ds.web.app *(aktueller Channel; Deploy-Befehl zeigt die genaue Adresse)*
+
+**Deploy-Befehle** — Test IMMER zuerst, Live nur nach „live bitte":
+
+| Was | Test-Channel | Live |
+|---|---|---|
+| **BestellApp** | im Ordner `fliegengitter-web`: `firebase hosting:channel:deploy test --expires 7d` | `firebase deploy --only hosting` |
+| **Webshop** | im Ordner `bella_shop`: `firebase hosting:channel:deploy test --only shop --expires 7d` | `firebase deploy --only hosting:shop` |
+| **Functions** | *(kein Test-Channel möglich)* | `firebase deploy --only functions:<name>` (z.B. `api`, `stripeWebhook`) |
+
+- **Firebase-Console:** https://console.firebase.google.com/project/fliegengitter-3486c
+- **Windows-Hinweis:** Ordner-Pfade sind dort anders (z.B. `C:\Users\…\bella_shop`) — die Befehle im jeweiligen Projekt-Terminal ausführen. Einmalig `firebase login` (Google-Konto) nötig, dann laufen die Deploys identisch.
+
+---
+
 ## Deploy-Workflow
 
 ### BestellApp (fliegengitter-web)

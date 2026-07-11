@@ -19,14 +19,16 @@
 
 ---
 
-## 🎯 Aktueller Stand (Stand: 2026-05-28)
+## 🎯 Aktueller Stand (Stand: 2026-07-11)
 
-**Stripe-Integration: bereit für Go-Live, läuft noch im Test-Modus.**
+**Shop ist LIVE — echte Stripe-Zahlungen aktiv.** Kunden bestellen + bezahlen real auf `fliegengitterwien.at`.
+
+> 📌 **Laufender Projekt-Stand, App-Version + Änderungshistorie:** siehe **[CLAUDE.md](CLAUDE.md)** (Changelog + Offene TODOs) — das ist die lebende Quelle. Diese README ist der Deploy-/Setup-Referenz-Guide (Ersteinrichtung, Stripe/Resend, Debugging).
 
 | Bereich | Status |
 |---|---|
 | Frontend (Konfigurator + Tracking) | ✅ Live auf `fliegengitterwien.at` |
-| Cloud Functions deployed | ✅ `api`, `stripeWebhook`, `onOrderCreated`, `onOrderStatusChange`, `onPaymentReceived` |
+| Cloud Functions deployed | ✅ `api`, `stripeWebhook`, `onOrderCreated`, `onOrderStatusChange`, `onPaymentReceived`, `scheduledBackup` |
 | Stripe-Checkout-Session-Erstellung | ✅ |
 | Webhook mit Signatur-Verifikation + Idempotenz | ✅ |
 | Webhook-Events behandelt | ✅ `completed`, `expired`, `async_payment_failed`, `charge.refunded`, `charge.dispute.created` |
@@ -34,19 +36,16 @@
 | Email-Versand (Resend) | ✅ |
 | Refund-Verarbeitung | ✅ Order wird auf `refunded`/`partial_refund` gesetzt, Admin-Email |
 | Chargeback-Notification | ✅ Dringende Admin-Email mit Dashboard-Link |
-| Stripe Live-Mode-Umstellung | ⏳ Ausstehend (Test-Secrets noch aktiv) |
+| Stripe Live-Mode | ✅ **Aktiv** (echte Zahlungen) |
 
-### Offen vor Go-Live
+> Die „Go-Live-Checkliste" unten ist **erledigt** und bleibt nur als Referenz stehen (z.B. falls Keys mal rotiert werden müssen).
 
-1. **Stripe-Live-Mode aktivieren** — siehe Abschnitt „Go-Live-Checkliste" unten
-2. **Logo** in `/icons/icon-192.png` und `icon-512.png` durch echtes Bella-Home-Logo ersetzen
-3. **Schluss-Test mit echter Karte** und sofortigem Refund
-
-### Nice-to-have (kann nach Launch)
+### Nice-to-have / offen
 
 - Smoke-Test um Stripe-Checkout-Flow erweitern (`scripts/smoke-test.sh`)
 - Cleanup-Job für `stripeEvents`-Collection (Events > 90 Tage löschen)
 - Email an Kunden bei Refund (aktuell nur Admin)
+- **Sicherheits-Härtung nach Urlaub** (siehe CLAUDE.md TODOs: App Check schrittweise, Security-Header, Firestore-Rules, stale Hosting-Target `app`)
 
 ---
 

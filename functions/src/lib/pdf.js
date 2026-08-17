@@ -73,6 +73,7 @@ async function generateInvoicePDF(options) {
       const buffers = [];
       const doc = new PDFDocument({
         size: 'A4',
+        bufferPages: true, // Mehrseiten-Fix 2026-08-17: erlaubt Fußzeile auf jeder Seite
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         info: {
           Title: 'Rechnung ' + options.invoiceNumber,
@@ -162,20 +163,28 @@ function drawPdf(doc, opts) {
   doc.text('vielen Dank für Ihre Bestellung. Wir stellen Ihnen den Rechnungsbetrag wie folgt in Rechnung:', 50, introY + 18, { width: 495 });
 
   // ═══ POSITIONS-TABELLE ═══════════════════════════════════════
-  let tableY = 350;
   const cols = { pos: 50, desc: 80, qty: 350, unit: 410, total: 480 };
 
-  // Tabellenkopf
-  doc.rect(50, tableY - 4, 495, 22).fill('#F7F6FF');
-  doc.fontSize(9).fillColor(BRAND_DARK).font('Helvetica-Bold');
-  doc.text('Pos.', cols.pos, tableY + 3);
-  doc.text('Bezeichnung', cols.desc, tableY + 3);
-  doc.text('Stück', cols.qty, tableY + 3, { width: 50, align: 'right' });
-  doc.text('Einzelpreis', cols.unit, tableY + 3, { width: 60, align: 'right' });
-  doc.text('Gesamt', cols.total, tableY + 3, { width: 65, align: 'right' });
+  // Seiten-Geometrie für mehrseitige Rechnungen (Mehrseiten-Fix 2026-08-17)
+  const PAGE_BOTTOM = doc.page.height - doc.page.margins.bottom; // ~792
+  const CONTENT_TOP = doc.page.margins.top;                      // 50
+  const FOOTER_RESERVE = 70;   // Platz für die Pflicht-Fußzeile unten
+  const ITEM_ROW_H = 36;
 
-  tableY += 26;
-  doc.font('Helvetica').fillColor(TEXT).fontSize(10);
+  // Zeichnet den Tabellenkopf bei y und liefert die y-Position der ersten Datenzeile.
+  const drawTableHeader = (y) => {
+    doc.rect(50, y - 4, 495, 22).fill('#F7F6FF');
+    doc.fontSize(9).fillColor(BRAND_DARK).font('Helvetica-Bold');
+    doc.text('Pos.', cols.pos, y + 3);
+    doc.text('Bezeichnung', cols.desc, y + 3);
+    doc.text('Stück', cols.qty, y + 3, { width: 50, align: 'right' });
+    doc.text('Einzelpreis', cols.unit, y + 3, { width: 60, align: 'right' });
+    doc.text('Gesamt', cols.total, y + 3, { width: 65, align: 'right' });
+    doc.font('Helvetica').fillColor(TEXT).fontSize(10);
+    return y + 26;
+  };
+
+  let tableY = drawTableHeader(350);
 
   // v1.19.59: sprechende Varianten-Note mit Namen (statt roher key:value-IDs)
   const NP_LABELS = { netz: 'Nur Netz', plisee: 'Nur Plissee', plissee: 'Nur Plissee', kombi: 'Kombi (Netz + Plissee)' };
@@ -192,6 +201,15 @@ function drawPdf(doc, opts) {
   };
 
   (order.measures || []).forEach((m, i) => {
+    // Seitenumbruch: passt die (2-zeilige) Position nicht mehr auf die Seite,
+    // neue Seite beginnen und den Tabellenkopf wiederholen.
+    // (Mehrseiten-Fix 2026-08-17 — behebt das Zerfallen mehrseitiger Rechnungen,
+    //  bei dem jede Zelle auf einer eigenen Seite landete.)
+    if (tableY + ITEM_ROW_H > PAGE_BOTTOM - FOOTER_RESERVE) {
+      doc.addPage();
+      tableY = drawTableHeader(CONTENT_TOP + 10);
+    }
+
     const variantNote = buildVariantNote(m);
     const lines = [
       `${m.modelName || 'Fliegengitter'} ${m.breite}×${m.hoehe} cm`,
@@ -209,6 +227,13 @@ function drawPdf(doc, opts) {
 
     tableY += 36;
   });
+
+  // Summen-Block + Bankverbindung + Hinweis brauchen ~230pt am Stück —
+  // passt das nicht mehr, zuerst auf eine neue Seite wechseln. (Mehrseiten-Fix 2026-08-17)
+  if (tableY + 230 > PAGE_BOTTOM - FOOTER_RESERVE) {
+    doc.addPage();
+    tableY = CONTENT_TOP + 10;
+  }
 
   // Trennlinie nach Positionen
   doc.moveTo(50, tableY).lineTo(545, tableY).strokeColor(BORDER).lineWidth(0.5).stroke();
@@ -257,20 +282,24 @@ function drawPdf(doc, opts) {
      .text('Bereits vollständig bezahlt — vielen Dank für Ihren Einkauf.', 50, tableY, { width: 495, align: 'center' });
   tableY += 16;
 
-  // ═══ FUSSZEILE (Pflichtangaben Österreich) ═══════════════════
-  // 4 Zeilen × 9pt Höhe = ~36pt, plus Top-Padding, daher Start bei 730
+  // ═══ FUSSZEILE (Pflichtangaben Österreich) — auf JEDER Seite ═══
+  // Mehrseiten-Fix 2026-08-17: über die gepufferten Seiten iterieren und die
+  // Fußzeile auf jeder Seite an fester Position zeichnen (dank bufferPages).
   const footerY = 730;
-  doc.moveTo(50, footerY - 8).lineTo(545, footerY - 8).strokeColor(BORDER).lineWidth(0.5).stroke();
-  doc.fontSize(7).fillColor(MUTED).font('Helvetica');
-
   const footerCol1 = `${company.name}\n${company.street}, ${company.zip} ${company.city}\nTel: ${company.phone}\n${company.email}`;
   const footerCol2 = `UID: ${company.uid}\n${company.fn}\n${company.court}\nGeschäftsführer: ${company.gf}`;
   const footerCol3 = `Bank: ${company.bankName}\nIBAN: ${company.iban}\nBIC: ${company.bic}\nMaßanfertigung: kein Widerrufsrecht`;
 
-  // Alle 3 Spalten mit fester Position - lineBreak: false verhindert Spaltenverschiebung
-  doc.text(footerCol1, 50,  footerY, { width: 165, lineBreak: true });
-  doc.text(footerCol2, 220, footerY, { width: 165, lineBreak: true });
-  doc.text(footerCol3, 390, footerY, { width: 165, lineBreak: true });
+  const range = doc.bufferedPageRange();
+  for (let p = 0; p < range.count; p++) {
+    doc.switchToPage(range.start + p);
+    doc.moveTo(50, footerY - 8).lineTo(545, footerY - 8).strokeColor(BORDER).lineWidth(0.5).stroke();
+    doc.fontSize(7).fillColor(MUTED).font('Helvetica');
+    // Alle 3 Spalten mit fester Position - lineBreak verhindert Spaltenverschiebung
+    doc.text(footerCol1, 50,  footerY, { width: 165, lineBreak: true });
+    doc.text(footerCol2, 220, footerY, { width: 165, lineBreak: true });
+    doc.text(footerCol3, 390, footerY, { width: 165, lineBreak: true });
+  }
 }
 
 module.exports = { generateInvoicePDF };

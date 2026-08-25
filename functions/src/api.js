@@ -67,6 +67,7 @@ app.get('/models', async (req, res) => {
         },
         defaultColor: m.defaultColor || 'Antrazit',
         availableColors: m.colors || [],
+        availableNetzColors: m.netzColors || [],
         variantIds: m.variantIds || [],
         forcedDoppeltuer: !!m.forcedDoppeltuer,
         images: sortedImages

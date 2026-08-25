@@ -834,7 +834,10 @@ window.views = (function() {
           followupHtml += renderColorFollowup(idx, 'plisseeFarbe', 'Sonnenschutz-Stofffarbe', cache.plisseeColors || [], mm.variants?.plisseeFarbe);
         }
         if (currentOpt.netzFollowup) {
-          followupHtml += renderColorFollowup(idx, 'netzFarbe', 'Fliegengitter-Netzfarbe', cache.netzColors || [], mm.variants?.netzFarbe);
+          // Nur die für dieses Profil erlaubten Netzfarben (leer = alle erlaubt).
+          const allowedNetz = (m.availableNetzColors && m.availableNetzColors.length) ? m.availableNetzColors : null;
+          const netzColorList = (cache.netzColors || []).filter(c => !allowedNetz || allowedNetz.includes(c.id));
+          followupHtml += renderColorFollowup(idx, 'netzFarbe', 'Fliegengitter-Netzfarbe', netzColorList, mm.variants?.netzFarbe);
         }
       }
       return `

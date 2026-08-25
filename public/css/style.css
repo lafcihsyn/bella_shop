@@ -402,7 +402,7 @@ h1, h2, h3, h4 {
 /* Modell-Karte (Wahl-Liste) */
 .model-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 14px;
   margin-bottom: 16px;
 }
@@ -429,7 +429,7 @@ h1, h2, h3, h4 {
   padding: 17.5px;
 }
 .model-icon {
-  width: 56px; height: 56px;
+  width: 72px; height: 72px;
   border-radius: var(--radius-md);
   background: var(--brand-light);
   display: flex;
@@ -437,13 +437,13 @@ h1, h2, h3, h4 {
   justify-content: center;
   color: var(--brand);
   flex-shrink: 0;
-  font-size: 28px;
+  font-size: 36px;
 }
 .model-card.selected .model-icon {
   background: white;
 }
 .model-thumb {
-  width: 80px; height: 80px;
+  width: 120px; height: 120px;
   border-radius: var(--radius-md);
   flex-shrink: 0;
   border: 1px solid var(--border);

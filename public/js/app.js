@@ -43,7 +43,7 @@ window.app = (function() {
   // dynamisch, sonst sähe jede Seite für Google + Social-Shares gleich aus.
   const ROUTE_META = {
     '/':             { title: 'Fliegengitter nach Maß in Wien — Bella Home',                desc: 'Fliegengitter online konfigurieren, in 4 Minuten bestellen und in Wien abholen. Maßanfertigung von Bella Home GmbH, 1230 Wien.' },
-    '/konfigurator': { title: 'Fliegengitter konfigurieren — Bella Home Wien',               desc: 'Maße eingeben, Modell und Farbe wählen, online sicher bezahlen. Maßanfertigung von Bella Home in Wien.' },
+    '/konfigurator': { title: 'Fliegengitter konfigurieren — Bella Home Wien',               desc: 'Maße eingeben, Profil und Farbe wählen, online sicher bezahlen. Maßanfertigung von Bella Home in Wien.' },
     '/bestellung':   { title: 'Bestellung verfolgen — Bella Home Wien',                       desc: 'Status Ihrer Fliegengitter-Bestellung verfolgen.' },
     '/kontakt':      { title: 'Kontakt — Bella Home Wien | Fliegengitter Filiale 1230',      desc: 'Bella Home GmbH, Oberlaaerstraße 285, 1230 Wien. Telefon +43 660 200 06 44.' },
     '/hilfe':        { title: 'Hilfe & FAQ — Fliegengitter Bella Home Wien',                  desc: 'Häufige Fragen zu Fliegengitter-Bestellung, Maßanfertigung, Abholung in Wien.' },
@@ -162,10 +162,10 @@ window.app = (function() {
   function validateStep(step) {
     const s = window.state.get();
     if (step === 1) {
-      if (!s.modelId) return { error: 'Bitte ein Modell auswählen.' };
+      if (!s.modelId) return { error: 'Bitte ein Profil auswählen.' };
     }
     if (step === 2) {
-      if (!s.modelData) return { error: 'Modell nicht geladen.' };
+      if (!s.modelData) return { error: 'Profil nicht geladen.' };
       const lim = s.modelData.measureLimits;
       const measures = s.measures || [];
       if (!measures.length) return { error: 'Mindestens eine Position erforderlich.' };
@@ -205,7 +205,7 @@ window.app = (function() {
   function selectModel(id) {
     const data = window.views.cache.models?.find(m => m.id === id);
     if (!data) {
-      toast('Modell nicht gefunden', 'error');
+      toast('Profil nicht gefunden', 'error');
       return;
     }
     // Modell wechselt → alle Positionen an neue Limits anpassen + ggf. Farbe leeren
@@ -355,15 +355,25 @@ window.app = (function() {
   }
 
   function measureSetVariant(idx, vid, value) {
+    // Vorherigen Netz/Plissee-Wert merken, bevor er überschrieben wird (für die Kombi-Umschaltung).
+    let prevNp;
+    if (vid === 'netz_plissee') {
+      try { prevNp = ((window.state.get().measures[idx] || {}).variants || {}).netz_plissee; } catch (e) { /* ignore */ }
+    }
     window.state.setMeasureVariant(idx, vid, value);
-    // v1.39: nurDoppeltuer-Option (z.B. Kombi) → automatisch Doppeltür setzen
+    // Kombi (Fliegengitter/Sonnenschutz) geht nur als Doppeltür → automatisch setzen.
+    // Per ID erzwingen (wie BestellApp v1.20.14), NICHT über das nurDoppeltuer-Flag —
+    // sonst würde die BestellApp die Kombi-Option bei Einzeltür ausblenden.
     if (vid === 'netz_plissee') {
       try {
         const cache = (window.views && window.views.cache) || {};
         const variant = (cache.variants || []).find(v => v.id === 'netz_plissee');
         const opt = variant?.options?.find(o => o.id === value);
-        if (opt && opt.nurDoppeltuer) {
+        if (value === 'kombi' || (opt && opt.nurDoppeltuer)) {
           window.state.updateMeasure(idx, { doppeltuer: true });
+        } else if (prevNp === 'kombi') {
+          // Zurück von Kombi zu Fliegengitter/Sonnenschutz → automatischen Doppeltür-Zwang aufheben.
+          window.state.updateMeasure(idx, { doppeltuer: false });
         }
       } catch (e) { /* ignore */ }
     }
@@ -388,7 +398,7 @@ window.app = (function() {
     const s = window.state.get();
 
     // Letzte Validierung
-    if (!s.modelId || !s.modelData) { toast('Modell fehlt', 'error'); return goToStep(1); }
+    if (!s.modelId || !s.modelData) { toast('Profil fehlt', 'error'); return goToStep(1); }
     if (!s.vorname || !s.nachname || !s.telefon || !s.email) { toast('Kontaktdaten unvollständig', 'error'); return goToStep(3); }
     if (!s.agbAccepted) { toast('Bitte AGB akzeptieren', 'error'); return; }
     if (!s.widerrufAccepted) { toast('Bitte Widerruf-Hinweis bestätigen', 'error'); return; }

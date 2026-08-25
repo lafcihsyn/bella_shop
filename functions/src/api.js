@@ -159,7 +159,7 @@ app.get('/plissee-colors', async (req, res) => {
     res.json({ colors });
   } catch (err) {
     console.error('[api/plissee-colors]', err);
-    res.status(500).json({ error: 'Plissee-Farben konnten nicht geladen werden' });
+    res.status(500).json({ error: 'Sonnenschutz-Stofffarben konnten nicht geladen werden' });
   }
 });
 
@@ -173,7 +173,7 @@ app.get('/netz-colors', async (req, res) => {
     res.json({ colors });
   } catch (err) {
     console.error('[api/netz-colors]', err);
-    res.status(500).json({ error: 'Netz-Farben konnten nicht geladen werden' });
+    res.status(500).json({ error: 'Fliegengitter-Netzfarben konnten nicht geladen werden' });
   }
 });
 

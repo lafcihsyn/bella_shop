@@ -187,14 +187,15 @@ function drawPdf(doc, opts) {
   let tableY = drawTableHeader(350);
 
   // v1.19.59: sprechende Varianten-Note mit Namen (statt roher key:value-IDs)
-  const NP_LABELS = { netz: 'Nur Netz', plisee: 'Nur Plissee', plissee: 'Nur Plissee', kombi: 'Kombi (Netz + Plissee)' };
+  // Kundenfreundliche Begriffe (Rechnung ist kundenseitig). Gespeichert bleibt netz/plisee/kombi.
+  const NP_LABELS = { netz: 'Fliegengitter', plisee: 'Sonnenschutz', plissee: 'Sonnenschutz', kombi: 'Fliegengitter/Sonnenschutz Kombi' };
   const buildVariantNote = (m) => {
     const v = m.variants || {};
     const parts = [];
     if (v.tuerart === 'doppel') parts.push('Doppeltür');
     if (v.netz_plissee) parts.push(NP_LABELS[v.netz_plissee] || v.netz_plissee);
-    if (m.netzFarbeName) parts.push('Netz: ' + m.netzFarbeName);
-    if (m.plisseeFarbeName) parts.push('Plissee: ' + m.plisseeFarbeName);
+    if (m.netzFarbeName) parts.push('Fliegengitter-Netzfarbe: ' + m.netzFarbeName);
+    if (m.plisseeFarbeName) parts.push('Sonnenschutz-Stofffarbe: ' + m.plisseeFarbeName);
     if (v.schwellenlos === 'schwellenlos') parts.push('Schwellenlos');
     if (v.bodenprofil === 'ja') parts.push('Bodenprofil');
     return parts.join(' · ');

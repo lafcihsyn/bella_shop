@@ -24,9 +24,9 @@ const VARIANT_LABELS = {
   tuerart:      { label: 'Türart',       values: { einzel: 'Einzeltür', doppel: 'Doppeltür' } },
   schwellenlos: { label: 'Schwelle',     values: { einzeltuer: 'Standard', doppeltuer: 'Doppeltür', schwellenlos: 'Schwellenlos' } },
   bodenprofil:  { label: 'Bodenprofil',  values: { ja: 'Ja', nein: 'Nein' } },
-  netz_plissee: { label: 'Netz/Plissee', values: { netz: 'Nur Netz', plisee: 'Nur Plissee', plissee: 'Nur Plissee', kombi: 'Kombi (Netz + Plissee)' } },
-  plisseeFarbe: { label: 'Plissee-Farbe' },
-  netzFarbe:    { label: 'Netz-Farbe' }
+  netz_plissee: { label: 'Ausführung', values: { netz: 'Fliegengitter', plisee: 'Sonnenschutz', plissee: 'Sonnenschutz', kombi: 'Fliegengitter/Sonnenschutz Kombi' } },
+  plisseeFarbe: { label: 'Sonnenschutz-Stofffarbe' },
+  netzFarbe:    { label: 'Fliegengitter-Netzfarbe' }
 };
 
 // v1.19.59: bekommt das ganze measure-Objekt (m), damit Netz-/Plissee-Farbe mit
@@ -39,11 +39,11 @@ function formatVariants(m) {
   for (const [k, v] of Object.entries(variants)) {
     if (!v) continue;
     if (k === 'netzFarbe') {
-      if (m.netzFarbeName) rows.push(`Netz-Farbe: ${m.netzFarbeName}`);
+      if (m.netzFarbeName) rows.push(`Fliegengitter-Netzfarbe: ${m.netzFarbeName}`);
       continue; // ohne Namen lieber weglassen als rohe ID
     }
     if (k === 'plisseeFarbe') {
-      if (m.plisseeFarbeName) rows.push(`Plissee-Farbe: ${m.plisseeFarbeName}`);
+      if (m.plisseeFarbeName) rows.push(`Sonnenschutz-Stofffarbe: ${m.plisseeFarbeName}`);
       continue;
     }
     const cfg = VARIANT_LABELS[k];

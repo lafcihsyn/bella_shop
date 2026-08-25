@@ -24,6 +24,14 @@ window.views = (function() {
       ja:   'Ja — Flaches Bodenprofil (1 cm Höhe), nahezu schwellenlos',
       nein: 'Nein — Standard-Fliegengitterprofil (3,9 cm Höhe)'
     }
+    // netz_plissee wird NICHT hier überschrieben — die Options-Namen
+    // („Fliegengitter"/„Sonnenschutz"/„…Kombi") kommen aus den Stammdaten
+    // (Firestore), damit die Stammdaten die einzige Quelle sind.
+  };
+
+  // Kundenfreundliche Feld-Überschriften (nur Anzeige; überschreibt das Firestore-Label).
+  const VARIANT_FIELD_LABEL_OVERRIDES = {
+    netz_plissee: 'Ausführung'
   };
 
   // Einfache Lightbox für Hint-Bilder: vergrößert ein Bild beim Klick.
@@ -583,7 +591,7 @@ window.views = (function() {
   // ═════════════════════════════════════════════════════════════
   function renderStepper(step) {
     const steps = [
-      { n: 1, label: 'Modell' },
+      { n: 1, label: 'Profil' },
       { n: 2, label: 'Maße & Farbe' },
       { n: 3, label: 'Kontakt' },
       { n: 4, label: 'Bezahlung' }
@@ -625,7 +633,7 @@ window.views = (function() {
           <div class="banner banner-warn">
             <i class="ti ti-alert-triangle" aria-hidden="true"></i>
             <div>
-              <strong>Aktuell sind keine Modelle online verfügbar.</strong><br>
+              <strong>Aktuell sind keine Profile online verfügbar.</strong><br>
               Bitte besuchen Sie uns in der Filiale oder rufen Sie uns an: ${window.SHOP_CONFIG.company.phone}
             </div>
           </div>
@@ -667,10 +675,10 @@ window.views = (function() {
     return `
       ${renderStepper(1)}
       <div class="card fade-in">
-        <h2 class="card-title">Welches Modell möchten Sie?</h2>
+        <h2 class="card-title">Welches Profil möchten Sie?</h2>
         <p style="font-size:13px;color:var(--text-muted);margin:0 0 18px">
-          Wählen Sie das passende Fliegengitter für Ihr Fenster oder Ihre Tür.
-          Aktuell online verfügbar: ${data.models.length} Modell${data.models.length === 1 ? '' : 'e'}.
+          Wählen Sie das passende Fliegengitter-Profil für Ihr Fenster oder Ihre Tür.
+          Aktuell online verfügbar: ${data.models.length} Profil${data.models.length === 1 ? '' : 'e'}.
         </p>
         <div class="model-grid">${modelsHtml}</div>
         <button class="btn btn-primary" onclick="app.next()" ${!state.modelId ? 'disabled' : ''}>
@@ -703,7 +711,7 @@ window.views = (function() {
     return `
       <div class="card">
         <h3 class="card-title" style="font-size:15px;margin-bottom:14px">Ihre Konfiguration</h3>
-        <div class="summary-row muted"><span>Modell</span><span>${escapeHtml(m.name)}</span></div>
+        <div class="summary-row muted"><span>Profil</span><span>${escapeHtml(m.name)}</span></div>
         ${rows}
         ${total ? `
           <div class="price-box">
@@ -716,7 +724,7 @@ window.views = (function() {
         <button class="btn btn-primary" onclick="app.next()">
           Weiter zu Kontaktdaten <i class="ti ti-arrow-right" aria-hidden="true"></i>
         </button>
-        <button class="btn btn-text" onclick="app.prev()">← Modell ändern</button>
+        <button class="btn btn-text" onclick="app.prev()">← Profil ändern</button>
       </div>
     `;
   }
@@ -786,7 +794,8 @@ window.views = (function() {
     // Türart-Auswahl auf Doppeltür sperren — Einzeltür für dieses Maß nicht möglich.
     const npVariantObj = variantsFromCache.find(v => v.id === 'netz_plissee');
     const currentNpOpt = npVariantObj?.options?.find(o => o.id === (mm.variants||{}).netz_plissee);
-    const lockToDoppel = !!currentNpOpt?.nurDoppeltuer;
+    // Kombi erzwingt Doppeltür — per ID (wie BestellApp v1.20.14), unabhängig vom Flag.
+    const lockToDoppel = (mm.variants||{}).netz_plissee === 'kombi' || !!currentNpOpt?.nurDoppeltuer;
     const tuerartHtml = hasTuerart ? `
       <div class="field">
         <label class="field-label">Türart${lockToDoppel ? ' <span style="font-size:11px;color:var(--text-muted);text-transform:none;letter-spacing:normal;font-weight:400">(automatisch Doppeltür wegen Kombi)</span>' : ''}</label>
@@ -800,7 +809,7 @@ window.views = (function() {
     const variantsHtml = otherVariants.map(vid => {
       const variant = variantsFromCache.find(v => v.id === vid);
       if (!variant || !Array.isArray(variant.options)) return '';
-      const displayName = variant.displayName || variant.name || vid;
+      const displayName = VARIANT_FIELD_LABEL_OVERRIDES[vid] || variant.displayName || variant.name || vid;
       const overrides = VARIANT_OPTION_LABEL_OVERRIDES[vid] || {};
       const optionsHtml = variant.options.map(opt => {
         // Lookup über ID ODER Label (case-insensitive). Firestore-IDs sind
@@ -822,10 +831,10 @@ window.views = (function() {
       let followupHtml = '';
       if (currentOpt) {
         if (currentOpt.plisseeFollowup) {
-          followupHtml += renderColorFollowup(idx, 'plisseeFarbe', 'Plissee-Stoff-Farbe', cache.plisseeColors || [], mm.variants?.plisseeFarbe);
+          followupHtml += renderColorFollowup(idx, 'plisseeFarbe', 'Sonnenschutz-Stofffarbe', cache.plisseeColors || [], mm.variants?.plisseeFarbe);
         }
         if (currentOpt.netzFollowup) {
-          followupHtml += renderColorFollowup(idx, 'netzFarbe', 'Netz-Farbe', cache.netzColors || [], mm.variants?.netzFarbe);
+          followupHtml += renderColorFollowup(idx, 'netzFarbe', 'Fliegengitter-Netzfarbe', cache.netzColors || [], mm.variants?.netzFarbe);
         }
       }
       return `
@@ -1577,7 +1586,7 @@ Es gilt österreichisches Recht. Gerichtsstand für Streitigkeiten ist Wien.`;
 Bella Home GmbH, Oberlaaerstraße 285, 1230 Wien, Tel: +43 660 200 06 44, Email: info@bellahome.at
 
 ## Welche Daten wir erheben
-Für die Bestellabwicklung: Name, Email, Telefon, Bestelldaten (Maße, Modell, Farbe). Für die Email-Zustellung wird zusätzlich der Versandstatus durch unseren Versanddienst (Resend) protokolliert.
+Für die Bestellabwicklung: Name, Email, Telefon, Bestelldaten (Maße, Profil, Farbe). Für die Email-Zustellung wird zusätzlich der Versandstatus durch unseren Versanddienst (Resend) protokolliert.
 
 ## Wofür wir die Daten verwenden
 Ausschließlich zur Abwicklung Ihrer Bestellung (Bestätigung, Status-Updates, Rechnung). Keine Werbung, keine Newsletter, keine Weitergabe an Dritte zu Marketingzwecken.

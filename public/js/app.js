@@ -182,7 +182,7 @@ window.app = (function() {
           return { error: `${prefix}Stückzahl muss mindestens 1 sein.` };
         }
         if (!mm.farbe) {
-          return { error: `${prefix}Bitte eine Farbe wählen.` };
+          return { error: `${prefix}Bitte eine Profilfarbe wählen.` };
         }
       }
     }

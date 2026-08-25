@@ -911,7 +911,7 @@ window.views = (function() {
         ${tuerartHtml}
 
         <div class="field">
-          <label class="field-label">Farbe</label>
+          <label class="field-label">Profilfarbe</label>
           <div class="color-row">${colorsHtml || '<div style="font-size:13px;color:var(--text-muted)">Standard: ' + escapeHtml(m.defaultColor) + '</div>'}</div>
         </div>
 
@@ -1146,7 +1146,7 @@ window.views = (function() {
                   <div style="font-size:13px;color:var(--text)">
                     <strong>Position ${i + 1}</strong>
                     <span style="display:block;font-size:12px;color:var(--text-muted);margin-top:2px">
-                      ${fmtCm(mm.breite)} × ${fmtCm(mm.hoehe)} cm · ${mm.stueck} Stk · Farbe: ${escapeHtml(mm.farbe || '—')}${mm.doppeltuer ? ' · Doppeltür' : ''}
+                      ${fmtCm(mm.breite)} × ${fmtCm(mm.hoehe)} cm · ${mm.stueck} Stk · Profilfarbe: ${escapeHtml(mm.farbe || '—')}${mm.doppeltuer ? ' · Doppeltür' : ''}
                     </span>
                   </div>
                   <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap">${pp ? eur(pp.gross) : '—'}</div>

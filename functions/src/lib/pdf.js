@@ -214,7 +214,7 @@ function drawPdf(doc, opts) {
     const variantNote = buildVariantNote(m);
     const lines = [
       `${m.modelName || 'Fliegengitter'} ${m.breite}×${m.hoehe} cm`,
-      `Farbe: ${m.farbe}` + (variantNote ? ' · ' + variantNote : '')
+      `Profilfarbe: ${m.farbe}` + (variantNote ? ' · ' + variantNote : '')
     ].filter(Boolean);
 
     doc.fillColor(TEXT).font('Helvetica');

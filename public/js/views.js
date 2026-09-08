@@ -979,7 +979,6 @@ window.views = (function() {
       ${renderStepper(2)}
       <div class="config-grid fade-in">
         <div class="card">
-          ${galleryHtml}
           <h2 class="card-title">${escapeHtml(m.name)} — Maße & Farbe</h2>
 
           ${measuresHtml}
@@ -989,8 +988,14 @@ window.views = (function() {
           </button>
         </div>
 
-        <div class="config-summary" id="step2-summary">
-          ${renderStep2SummaryCard(state, m, hasTuerart, total)}
+        <!-- Rechte Spalte bleibt fixiert (sticky): kleines Profilbild + Preis-Karte.
+             #step2-summary ist NUR die Preis-Karte (wird bei Eingaben neu gerendert) —
+             die Galerie liegt daneben, damit sie beim Live-Update nicht gelöscht wird. -->
+        <div class="config-summary">
+          ${galleryHtml}
+          <div id="step2-summary">
+            ${renderStep2SummaryCard(state, m, hasTuerart, total)}
+          </div>
         </div>
       </div>
     `;
